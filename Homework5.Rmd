@@ -1,0 +1,282 @@
+---
+title: "Homework5"
+output: github_document
+---
+
+First load the packages
+
+```{r}
+library(gapminder)
+library(tidyverse)
+library(forcats)
+library(plotly)
+```
+
+# Factor Management and Faceting
+
+First lets explore how to partially (and later completely) remove Oceania from the *Gapminder* dataset. The `summary` function breaks down the `continent` variable to show the frequency at which each data point occurs per continent.
+
+```{r}
+summary(gapminder$continent)
+```
+
+There are five continents, and 24 entries belong to Oceania. Removing one continent leaves us with four, so `four_cont` can be our variable name. We can use `summary` on the `four_cont` dataset to check if the countries that belong to Oceania have been removed.
+
+```{r}
+four_cont <- gapminder %>%
+  filter(continent != "Oceania")
+summary(four_cont$continent)
+```
+
+However, completely removing trace that Oceania existed requires the `droplevels` function. To keep thing organized, this would require a new variable name that builds upon the last one used, like `no_oceania`.
+
+```{r}
+no_oceania <- droplevels(four_cont)
+summary(no_oceania$continent)
+```
+
+Now lets look at the median and lowest lifeExp of countries within the Americas continent, sorted ascendingly by lowest lifeExp.
+
+```{r}
+americaslifeExp <- gapminder %>%
+  filter(continent == "Americas") %>%
+  group_by(country) %>%
+  summarize(
+    Continent = unique(continent),
+    MinLifeExp = min(lifeExp),
+    MedianLifeExp = median(lifeExp)
+  ) %>%
+  arrange(MinLifeExp)
+knitr::kable(americaslifeExp)
+```
+
+We can reorder for the dataset to show descending MinLifeExp.
+
+```{r}
+americaslifeExp %>%
+  arrange(desc(MinLifeExp)) %>%
+  knitr::kable()
+```
+
+Now lets take the `no_oceania` dataset and plot it for 1992 with faceting for lifeExp.
+
+```{r}
+no_oceania %>%
+  filter(year == 1992) %>%
+  mutate(continent = fct_reorder(continent, lifeExp)) %>%
+  ggplot(aes(continent, lifeExp)) +
+  geom_violin(aes()) +
+  theme(
+    plot.subtitle = element_text(vjust = 1),
+    plot.caption = element_text(vjust = 1),
+    axis.line = element_line(
+      size = 0.3,
+      linetype = "solid"
+    ),
+    axis.ticks = element_line(size = 0.3),
+    axis.title = element_text(family = "mono"),
+    axis.text = element_text(family = "mono"),
+    axis.text.x = element_text(family = "mono"),
+    axis.text.y = element_text(family = "mono"),
+    panel.background = element_rect(fill = NA)
+  ) +
+  labs(x = "Continent", y = "Life Expectancy in 1992")
+```
+
+The faceting can be modified to tell different stories, here continents are sorted descendingly by median, which is where the "broadest" region of the violin plot exists. This can 
+
+```{r}
+no_oceania %>%
+  filter(year == 1992) %>%
+  mutate(continent = fct_reorder(continent, lifeExp, median, .desc = TRUE)) %>%
+  ggplot(aes(continent, lifeExp)) +
+  geom_violin(aes()) +
+  theme(
+    plot.subtitle = element_text(vjust = 1),
+    plot.caption = element_text(vjust = 1),
+    axis.line = element_line(
+      size = 0.3,
+      linetype = "solid"
+    ),
+    axis.ticks = element_line(size = 0.3),
+    axis.title = element_text(family = "mono"),
+    axis.text = element_text(family = "mono"),
+    axis.text.x = element_text(family = "mono"),
+    axis.text.y = element_text(family = "mono"),
+    panel.background = element_rect(fill = NA)
+  ) +
+  labs(x = "Continent", y = "Life Expectancy in 1992")
+```
+
+The same can be done for the lifeExp of each country (not including Oceania)
+
+```{r}
+no_oceania %>%
+  filter(year == 1992) %>%
+  mutate(country = fct_reorder(country, lifeExp)) %>%
+  ggplot(aes(country, lifeExp)) +
+  geom_point(aes()) +
+  theme(
+    plot.subtitle = element_text(vjust = 1),
+    plot.caption = element_text(vjust = 1),
+    axis.line = element_line(
+      size = 0.3,
+      linetype = "solid"
+    ),
+    axis.ticks = element_line(size = 0.3),
+    axis.title = element_text(family = "mono"),
+    axis.text = element_text(family = "mono"),
+    axis.text.x = element_text(family = "mono"),
+    axis.text.y = element_text(family = "mono"),
+    panel.background = element_rect(fill = NA)
+  ) +
+  labs(x = "Country", y = "Life Expectancy in 1992") +
+  theme(axis.text = element_text(
+    hjust = 1,
+    vjust = 0
+  ), axis.text.x = element_text(
+    colour = "black",
+    vjust = 0.4, angle = 90
+  )) + theme(axis.text.x = element_text(size = 5)) +
+  theme(plot.background = element_rect(size = 1))
+```
+
+Then faceted to be sorted descendingly according to lifeExp.
+
+```{r}
+no_oceania %>%
+  filter(year == 1992) %>%
+  mutate(country = fct_reorder(country, lifeExp, .desc = TRUE)) %>%
+  ggplot(aes(country, lifeExp)) +
+  geom_point(aes()) +
+  theme(
+    plot.subtitle = element_text(vjust = 1),
+    plot.caption = element_text(vjust = 1),
+    axis.line = element_line(
+      size = 0.3,
+      linetype = "solid"
+    ),
+    axis.ticks = element_line(size = 0.3),
+    axis.title = element_text(family = "mono"),
+    axis.text = element_text(family = "mono"),
+    axis.text.x = element_text(family = "mono"),
+    axis.text.y = element_text(family = "mono"),
+    panel.background = element_rect(fill = NA)
+  ) +
+  labs(x = "Country", y = "Life Expectancy in 1992") +
+  theme(axis.text = element_text(
+    hjust = 1,
+    vjust = 0
+  ), axis.text.x = element_text(
+    colour = "black",
+    vjust = 0.4, angle = 90
+  )) + theme(axis.text.x = element_text(size = 5)) +
+  theme(plot.background = element_rect(size = 1))
+```
+
+# Reading and Writing CSV files
+
+The `no_oceania` dataset can be exported, saving the output of transformations done with R.
+
+```{r}
+write_csv(no_oceania, "GapminderWithoutOceania.csv")
+```
+
+This file can be read from the working directory
+
+```{r}
+read_csv("GapminderWithoutOceania.csv")
+```
+
+# Remaking a plot
+
+Here a plot shown before is slightly modified to show a color dimension for continent. The plot elements, like the color legend, is edited for optimal use of space.
+
+```{r}
+no_oceania %>%
+  filter(year == 1992) %>%
+  mutate(country = fct_reorder(country, lifeExp)) %>%
+  ggplot(aes(country, lifeExp)) +
+  geom_point(aes(color = continent)) +
+  theme(
+    plot.subtitle = element_text(vjust = 1),
+    plot.caption = element_text(vjust = 1),
+    axis.line = element_line(
+      size = 0.3,
+      linetype = "solid"
+    ),
+    axis.ticks = element_line(size = 0.3),
+    axis.title = element_text(family = "mono"),
+    axis.text = element_text(family = "mono"),
+    axis.text.x = element_text(family = "mono"),
+    axis.text.y = element_text(family = "mono"),
+    panel.background = element_rect(fill = NA)
+  ) +
+  labs(x = "Country", y = "Life Expectancy in 1992") +
+  theme(axis.text = element_text(
+    hjust = 1,
+    vjust = 0
+  ), axis.text.x = element_text(
+    colour = "black",
+    vjust = 0.4, angle = 90
+  )) + theme(axis.text.x = element_text(size = 5)) +
+  theme(plot.background = element_rect(size = 1)) + theme(
+    legend.text = element_text(family = "mono"),
+    legend.title = element_text(family = "mono"),
+    legend.position = "top", legend.direction = "horizontal"
+  ) + labs(colour = NULL)
+```
+
+To make this graph interactive in an HTML setting, the `plotly` library can enable interactive properties. However, much of the custom edits available in the `ggplot2` package are ignored by `plotly`. The HTML output is commented out (suppressed) because it interferes with .md kitting into github_document format.
+
+```{r}
+plotly_plot <- no_oceania %>%
+  filter(year == 1992) %>%
+  mutate(country = fct_reorder(country, lifeExp)) %>%
+  ggplot(aes(country, lifeExp)) +
+  geom_point(aes(color = continent)) +
+  theme(
+    plot.subtitle = element_text(vjust = 1),
+    plot.caption = element_text(vjust = 1),
+    axis.line = element_line(
+      size = 0.3,
+      linetype = "solid"
+    ),
+    axis.ticks = element_line(size = 0.3),
+    axis.title = element_text(family = "mono"),
+    axis.text = element_text(family = "mono"),
+    axis.text.x = element_text(family = "mono"),
+    axis.text.y = element_text(family = "mono"),
+    panel.background = element_rect(fill = NA)
+  ) +
+  labs(x = "Country", y = "Life Expectancy in 1992") +
+  theme(axis.text = element_text(
+    hjust = 1,
+    vjust = 0
+  ), axis.text.x = element_text(
+    colour = "black",
+    vjust = 0.4, angle = 90
+  )) + theme(axis.text.x = element_text(size = 5)) +
+  theme(plot.background = element_rect(size = 1)) + theme(
+    legend.text = element_text(family = "mono"),
+    legend.title = element_text(family = "mono"),
+    legend.position = "top", legend.direction = "horizontal"
+  ) + labs(colour = NULL)
+
+# ggplotly(plotly_plot)
+```
+
+# Saving images
+
+Here the plot shown above is exported as a high-resolution .png image.
+
+```{r}
+ggsave("NoOceania.png",
+  plot = plotly_plot, 
+  device = "png",
+  width = 12, 
+  height = 6,
+  dpi = 500)
+```
+
+Then it can be called back. 
