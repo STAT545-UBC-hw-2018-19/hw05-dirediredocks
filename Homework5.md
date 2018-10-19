@@ -393,7 +393,7 @@ plotly_plot <- no_oceania %>%
     legend.position = "top", legend.direction = "horizontal"
   ) + labs(colour = NULL)
 
-# ggplotly(plotly_plot)
+ggplotly(plotly_plot)
 ```
 
 Saving images
@@ -411,3 +411,6 @@ ggsave("NoOceania.png",
 ```
 
 Then it can be called back.
+![Alt text](NoOceania.png)
+
+https://github.com/STAT545-UBC-students/hw05-dirediredocks/blob/master/NoOceania.png?raw=true
